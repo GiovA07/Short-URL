@@ -129,14 +129,28 @@ func handleGetStats(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func handleRedirect(w http.ResponseWriter, r *http.Request) {
+	shortCode := r.PathValue("shortCode")
+	// 1. Buscamos y sumamos 1 al mismo tiempo
+	url, exists := store.GetAndIncrement(shortCode)
+	if !exists {
+		http.Error(w, "Enlace no encontrado", http.StatusNotFound)
+		return
+	}
+
+	// 2. Redireccionamos al usuario a la URL original
+	http.Redirect(w, r, url.OriginalUrl, http.StatusFound)
+}
+
 func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("POST /shorten", handleCreateShortURL)
-	mux.HandleFunc("GET /shorten", handleGetURL)
+	mux.HandleFunc("GET /shorten/{shortCode}", handleGetURL)
 	mux.HandleFunc("PUT /shorten/{shortCode}", handleUpdateURL)
 	mux.HandleFunc("DELETE /shorten/{shortCode}", handleDeleteURL)
-	mux.HandleFunc("GET /shorten/{shortCode}/status", handleGetStats)
+	mux.HandleFunc("GET /shorten/{shortCode}/stats", handleGetStats)
+	mux.HandleFunc("GET /{shortCode}", handleRedirect)
 
 	fmt.Println("listening on port :8080")
 	if err := http.ListenAndServe(":8080", mux); err != nil {

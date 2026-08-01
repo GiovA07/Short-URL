@@ -11,6 +11,7 @@ type URLDataBase struct {
 	nextID int
 }
 
+/* ESTO SEGURAMENTE SI ES CONCURRENTE PODRIAN OCURRIR ERRORES*/
 func NewURLData() *URLDataBase {
 	return &URLDataBase{
 		urls:   make(map[string]URL),
@@ -58,4 +59,17 @@ func (s *URLDataBase) DeleteURL(shortCode string) bool {
 	delete(s.urls, shortCode)
 
 	return true
+}
+
+// busca la URL, incrementa en 1 el contador y la devuelve
+func (s *URLDataBase) GetAndIncrement(shortCode string) (*URL, bool) {
+	url, exists := s.urls[shortCode]
+	if !exists {
+		return nil, false
+	}
+
+	url.AccessCount++
+	s.urls[shortCode] = url
+
+	return &url, true
 }
