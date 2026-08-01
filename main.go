@@ -8,6 +8,11 @@ import (
 	"time"
 )
 
+/*
+	ME BASE EN ESTE PROYECTO
+	https://roadmap.sh/projects/url-shortening-service
+*/
+
 // Instanciamos la base de datos de forma global
 var store = NewURLData()
 
@@ -59,21 +64,54 @@ func handleCreateShortURL(w http.ResponseWriter, r *http.Request) {
 
 func handleGetURL(w http.ResponseWriter, r *http.Request) {
 	//  GET /shorten/{shortCode}
-	shortCode = r.PathValue("shortCode")
-	
-	URL := repository.
+	shortCode := r.PathValue("shortCode")
 
-	fmt.Fprintf(w, "Endpoint para obtener la URL original")
+	url, exist := store.Get_URL(shortCode)
+	if !exist {
+		http.Error(w, `{"error": "URL no encontrada"}`, http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK) //code 200 OK
+	json.NewEncoder(w).Encode(url)
 }
 
 func handleUpdateURL(w http.ResponseWriter, r *http.Request) {
 	// PUT /shorten/{shortCode}
-	fmt.Fprintf(w, "Endpoint para actualizar URL")
+	shortCode := r.PathValue("shortCode")
+
+	var newURL CreateURLRequest
+
+	// 1. Decodificamos y validamos el JSON entrante
+	err := json.NewDecoder(r.Body).Decode(&newURL)
+	if err != nil {
+		http.Error(w, `{"error": "URL es requerida o JSON inválido"}`, http.StatusBadRequest)
+		return
+	}
+
+	updateURL, exist := store.UpdateURL(shortCode, newURL.URL)
+	if !exist {
+		http.Error(w, `{"error": "URL no encontrada"}`, http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(updateURL)
+
 }
 
 func handleDeleteURL(w http.ResponseWriter, r *http.Request) {
 	// DELETE /shorten/{shortCode}
-	fmt.Fprintf(w, "Endpoint para eliminar URL")
+	shortCode := r.PathValue("shortCode")
+	deleted := store.DeleteURL(shortCode)
+	if !deleted {
+		http.Error(w, `{"error": "URL no encontrada"}`, http.StatusNotFound)
+		return
+	}
+	// Si fue exitoso, devolvemos 204 No Content
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func handleGetStats(w http.ResponseWriter, r *http.Request) {

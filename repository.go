@@ -1,6 +1,9 @@
 package main
 
-import "strconv"
+import (
+	"strconv"
+	"time"
+)
 
 // Esta va ser la base de datos por ahora hasta que conecte con mysql
 type URLDataBase struct {
@@ -29,4 +32,30 @@ func (s *URLDataBase) Get_URL(shortCode string) (*URL, bool) {
 		return nil, false
 	}
 	return &url, true
+}
+
+// ACTUALIZAR una URL
+func (s *URLDataBase) UpdateURL(shortCode string, newOriginalURL string) (*URL, bool) {
+	url, exists := s.urls[shortCode]
+	if !exists {
+		return nil, false
+	}
+
+	url.OriginalUrl = newOriginalURL
+	url.UpdateAt = time.Now().UTC()
+	s.urls[shortCode] = url
+
+	return &url, true
+}
+
+// ELIMINAR una URL
+func (s *URLDataBase) DeleteURL(shortCode string) bool {
+	_, exists := s.urls[shortCode]
+	if !exists {
+		return false
+	}
+
+	delete(s.urls, shortCode)
+
+	return true
 }
