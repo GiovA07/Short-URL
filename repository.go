@@ -21,3 +21,12 @@ func (s *URLDataBase) Save(u *URL) {
 	s.nextID++
 	s.urls[u.ShortCode] = *u
 }
+
+// Obtener una URL
+func (s *URLDataBase) Get_URL(shortCode string) (*URL, bool) {
+	url, exists := s.urls[shortCode]
+	if !exists {
+		return nil, false
+	}
+	return &url, true
+}

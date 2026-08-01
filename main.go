@@ -59,6 +59,10 @@ func handleCreateShortURL(w http.ResponseWriter, r *http.Request) {
 
 func handleGetURL(w http.ResponseWriter, r *http.Request) {
 	//  GET /shorten/{shortCode}
+	shortCode = r.PathValue("shortCode")
+	
+	URL := repository.
+
 	fmt.Fprintf(w, "Endpoint para obtener la URL original")
 }
 
