@@ -14,7 +14,7 @@ import (
 */
 
 // Instanciamos la base de datos de forma global
-var store = NewURLData()
+var store URLRepository = NewURLData()
 
 // CreateURLRequest representa el JSON entrante
 type CreateURLRequest struct {
@@ -53,7 +53,11 @@ func handleCreateShortURL(w http.ResponseWriter, r *http.Request) {
 		UpdateAt:    now,
 	}
 
-	store.Save(&newURL)
+	err = store.Save(&newURL)
+	if err != nil {
+		http.Error(w, `{"error": "Error interno al guardar la URL"}`, http.StatusInternalServerError)
+		return
+	}
 
 	// 3. Respondo al cliente
 	w.Header().Set("Content-Type", "application/json") //aviso que mando JSON
