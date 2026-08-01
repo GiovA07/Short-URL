@@ -116,7 +116,17 @@ func handleDeleteURL(w http.ResponseWriter, r *http.Request) {
 
 func handleGetStats(w http.ResponseWriter, r *http.Request) {
 	// GET /shorten/{shortCode}/stats
-	fmt.Fprintf(w, "Endpoint para estadisticas")
+	shortCode := r.PathValue("shortCode")
+	url, exist := store.Get_URL(shortCode)
+	if !exist {
+		http.Error(w, `{"error": "URL no encontrada"}`, http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(url)
+
 }
 
 func main() {
