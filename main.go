@@ -8,6 +8,9 @@ import (
 	"time"
 )
 
+// Instanciamos la base de datos de forma global
+var store = NewURLData()
+
 // CreateURLRequest representa el JSON entrante
 type CreateURLRequest struct {
 	URL string `json:"url"`
@@ -39,18 +42,17 @@ func handleCreateShortURL(w http.ResponseWriter, r *http.Request) {
 
 	//Creamos el objeto usando el struct de URL
 	newURL := URL{
-		ID:          "1",
 		OriginalUrl: URLreq.URL,
 		ShortCode:   shortCode,
 		CreateAt:    now,
 		UpdateAt:    now,
 	}
 
-	// 3. Respondo
+	store.Save(&newURL)
+
+	// 3. Respondo al cliente
 	w.Header().Set("Content-Type", "application/json") //aviso que mando JSON
 	w.WriteHeader(http.StatusCreated)                  //code 201 created
-
-	// codificamos el json para mandarlo
 	json.NewEncoder(w).Encode(newURL)
 
 }
