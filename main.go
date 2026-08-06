@@ -14,7 +14,7 @@ import (
 */
 
 // Instanciamos la base de datos de forma global
-var store URLRepository = NewURLData()
+var store URLRepository
 
 // CreateURLRequest representa el JSON entrante
 type CreateURLRequest struct {
@@ -147,41 +147,27 @@ func handleRedirect(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	// mux := http.NewServeMux()
-
-	// mux.HandleFunc("POST /shorten", handleCreateShortURL)
-	// mux.HandleFunc("GET /shorten/{shortCode}", handleGetURL)
-	// mux.HandleFunc("PUT /shorten/{shortCode}", handleUpdateURL)
-	// mux.HandleFunc("DELETE /shorten/{shortCode}", handleDeleteURL)
-	// mux.HandleFunc("GET /shorten/{shortCode}/stats", handleGetStats)
-	// mux.HandleFunc("GET /{shortCode}", handleRedirect)
-
-	// fmt.Println("listening on port :8080")
-	// if err := http.ListenAndServe(":8080", mux); err != nil {
-	// 	fmt.Printf("Error al iniciar el servidor: %s\n", err)
-	// }
-
-	// 1. Iniciamos nuestro nuevo motor de MySQL
-	store, err := NewURLMySQLStore()
+	var err error
+	// 1. Inicializo nuestro nuevo motor de MySQL
+	store, err = NewURLMySQLStore()
 	if err != nil {
-		log.Fatalf("❌ Error al iniciar MySQL: %v", err)
+		log.Fatalf("Error al iniciar MySQL: %v", err)
 	}
-	log.Println("✅ ¡Conectado a MySQL!")
+	log.Println("Conectado a MySQL!")
 
-	// 2. Creamos un struct URL de prueba
-	urlPrueba := &URL{
-		ShortCode:   "g00gl3",
-		OriginalUrl: "https://www.google.com",
-		CreateAt:    time.Now(),
-		UpdateAt:    time.Now(),
-		AccessCount: 0,
-	}
+	mux := http.NewServeMux()
+	// 2. Registro las rutas
+	mux.HandleFunc("POST /shorten", handleCreateShortURL)
+	mux.HandleFunc("GET /shorten/{shortCode}", handleGetURL)
+	mux.HandleFunc("PUT /shorten/{shortCode}", handleUpdateURL)
+	mux.HandleFunc("DELETE /shorten/{shortCode}", handleDeleteURL)
+	mux.HandleFunc("GET /shorten/{shortCode}/stats", handleGetStats)
+	mux.HandleFunc("GET /{shortCode}", handleRedirect)
 
-	//usamos save con mysql
-	err = store.Save(urlPrueba)
+	log.Println("Servidor corriendo en el puerto 8080")
+	// 3. Prendo el server
+	err = http.ListenAndServe(":8080", mux)
 	if err != nil {
-		log.Fatalf("Error al guardar en la BD: %v", err)
+		log.Fatalf("❌ Error en el servidor: %v", err)
 	}
-
-	log.Println("URL guardada exitosamente en MySQL!")
 }

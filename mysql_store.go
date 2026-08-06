@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
@@ -79,7 +80,7 @@ func (s *URLMySQLStore) Get_URL(shortCode string) (*URL, bool) {
 
 	// 2. Armamos la consulta
 	query := `
-        SELECT short_code, original_url, created_at, update_at 
+        SELECT short_code, original_url, created_at, update_at, access_count 
 		FROM urls
 		WHERE short_code = ? 
     `
@@ -90,6 +91,7 @@ func (s *URLMySQLStore) Get_URL(shortCode string) (*URL, bool) {
 		&u.OriginalUrl,
 		&u.CreateAt,
 		&u.UpdateAt,
+		&u.AccessCount,
 	)
 
 	//4. Verificamos
@@ -105,4 +107,64 @@ func (s *URLMySQLStore) Get_URL(shortCode string) (*URL, bool) {
 	}
 
 	return &u, true
+}
+
+// Obtener una URL
+func (s *URLMySQLStore) UpdateURL(shortCode string, newOriginalURL string) (*URL, bool) {
+	// 1. Armamos la consulta
+	query := `
+        UPDATE urls SET original_url = ?, update_at = ? 
+		WHERE short_code = ? 
+    `
+	// 2. Ejecutamos la consulta.
+	_, err := s.db.Exec(
+		query,
+		newOriginalURL,
+		time.Now(),
+		shortCode,
+	)
+	//3. Verificamos
+	if err != nil {
+		log.Printf("Error al actualizar URL: %v", err)
+		return nil, false
+	}
+
+	return s.Get_URL(shortCode)
+}
+
+// ELIMINAR una URL
+func (s *URLMySQLStore) DeleteURL(shortCode string) bool {
+	// 1. Armamos la consulta
+	query := `
+        DELETE FROM urls WHERE short_code = ? 
+    `
+	// 2. Ejecutamos la consulta.
+	result, err := s.db.Exec(
+		query,
+		shortCode,
+	)
+	//3. Verificamos si se ejecuto la consulta
+	if err != nil {
+		log.Printf("Error al eliminar URL: %v", err)
+		return false
+	}
+	// 4. Verificamos si realmente se borro alguna linea
+	filasBorradas, err := result.RowsAffected()
+	if err != nil {
+		return false
+	}
+
+	return filasBorradas > 0
+}
+
+// busca la URL, incrementa en 1 el contador y la devuelve
+func (s *URLMySQLStore) GetAndIncrement(shortCode string) (*URL, bool) {
+	//1. Sumamos 1 al contador directamente en la base de datos
+	query := "UPDATE urls SET access_count = access_count + 1 WHERE short_code = ?"
+	_, err := s.db.Exec(query, shortCode)
+	if err != nil {
+		log.Print("Error al incrementar el contador: %v", err)
+		return nil, false
+	}
+	return s.Get_URL(shortCode)
 }
