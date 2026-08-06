@@ -21,7 +21,6 @@ type URLDataBase struct {
 	nextID int
 }
 
-/* ESTO SEGURAMENTE SI ES CONCURRENTE PODRIAN OCURRIR ERRORES*/
 func NewURLData() *URLDataBase {
 	return &URLDataBase{
 		urls:   make(map[string]URL),
