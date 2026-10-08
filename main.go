@@ -19,7 +19,8 @@ var store URLRepository
 
 // CreateURLRequest representa el JSON entrante
 type CreateURLRequest struct {
-	URL string `json:"url"`
+	URL        string `json:"url"`
+	CustomCode string `json:"custom_code,omitempty"`
 }
 
 const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -50,9 +51,23 @@ func handleCreateShortURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//3 Determinamos el short code
+	var shortCode string
+
+	if URLreq.CustomCode != "" {
+		shortCode = URLreq.CustomCode
+		_, exists := store.Get_URL(shortCode)
+		if exists {
+			http.Error(w, `{"error": "Este codigo personalizado ya esta en uso"}`, http.StatusConflict)
+			return
+		}
+	} else {
+		// si no mando nada, lo generamos aleatoriamente
+		shortCode = generateShortCode(6)
+	}
+
 	//3. Genero los datos
 	now := time.Now().UTC()
-	shortCode := generateShortCode(6)
 
 	//Creamos el objeto usando el struct de URL
 	newURL := URL{
