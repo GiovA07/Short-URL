@@ -6,11 +6,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/GiovA07/SHORT-URL/storage"
 )
 
 func TestCreateShortURL(t *testing.T) {
 	//1. Usamos la base de datos en memoria como un mock
-	store = NewURLData()
+	store = storage.NewURLData()
 
 	//2. Preparamos el cuerpo de la peticion para simular a un usuario
 	jsonBody := []byte(`{"url": "https://test.com"}`)
@@ -28,7 +30,7 @@ func TestCreateShortURL(t *testing.T) {
 	}
 
 	//6. Revisamos el json que nos devolvio para ver si los datos son correctos
-	var responseURL URL
+	var responseURL storage.URL
 	err := json.NewDecoder(rr.Body).Decode(&responseURL)
 	if err != nil {
 		t.Fatalf(" Error al leer la respuesta: %v", err)

@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/GiovA07/SHORT-URL/storage"
 )
 
 /*
@@ -15,7 +17,7 @@ import (
 */
 
 // Instanciamos la base de datos de forma global
-var store URLRepository
+var store storage.URLRepository
 
 // CreateURLRequest representa el JSON entrante
 type CreateURLRequest struct {
@@ -70,7 +72,7 @@ func handleCreateShortURL(w http.ResponseWriter, r *http.Request) {
 	now := time.Now().UTC()
 
 	//Creamos el objeto usando el struct de URL
-	newURL := URL{
+	newURL := storage.URL{
 		OriginalUrl: URLreq.URL,
 		ShortCode:   shortCode,
 		CreateAt:    now,
@@ -173,7 +175,7 @@ func handleRedirect(w http.ResponseWriter, r *http.Request) {
 func main() {
 	var err error
 	// 1. Inicializo nuestro nuevo motor de MySQL
-	store, err = NewURLMySQLStore()
+	store, err = storage.NewURLMySQLStore()
 	if err != nil {
 		log.Fatalf("Error al iniciar MySQL: %v", err)
 	}
@@ -192,6 +194,6 @@ func main() {
 	// 3. Prendo el server
 	err = http.ListenAndServe(":8080", mux)
 	if err != nil {
-		log.Fatalf("❌ Error en el servidor: %v", err)
+		log.Fatalf("Error en el servidor: %v", err)
 	}
 }
