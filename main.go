@@ -5,6 +5,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -41,7 +42,15 @@ func handleCreateShortURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//2. Genero los datos
+	//2 Valido que la URL sea del formato correcto (http://)
+	//ParseREquestURI comprueba que el formato sea correcto
+	parsedURL, err := url.ParseRequestURI(URLreq.URL)
+	if err != nil || parsedURL.Scheme == "" || parsedURL.Host == "" {
+		http.Error(w, `{"error": "URL inválida. Asegúrate de incluir http:// o https://"}`, http.StatusBadRequest)
+		return
+	}
+
+	//3. Genero los datos
 	now := time.Now().UTC()
 	shortCode := generateShortCode(6)
 
@@ -59,7 +68,7 @@ func handleCreateShortURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 3. Respondo al cliente
+	// 4. Respondo al cliente
 	w.Header().Set("Content-Type", "application/json") //aviso que mando JSON
 	w.WriteHeader(http.StatusCreated)                  //code 201 created
 	json.NewEncoder(w).Encode(newURL)

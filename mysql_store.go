@@ -163,7 +163,7 @@ func (s *URLMySQLStore) GetAndIncrement(shortCode string) (*URL, bool) {
 	query := "UPDATE urls SET access_count = access_count + 1 WHERE short_code = ?"
 	_, err := s.db.Exec(query, shortCode)
 	if err != nil {
-		log.Print("Error al incrementar el contador: %v", err)
+		log.Printf("Error al incrementar el contador: %v", err)
 		return nil, false
 	}
 	return s.Get_URL(shortCode)
