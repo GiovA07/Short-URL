@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acortador de URL</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h2>🔗 Acortador de URL 🔗</h2>
+        <form id="shortenForm">
+            <input type="url" id="urlInput" placeholder="https://tu-enlace.com" required>
+            <input type="text" id="customCode" placeholder="URL personalizado (opcional)">
+            <button type="submit">Acortar URL</button>
+        </form>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('shortenForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const url = document.getElementById('urlInput').value;
+            const custom = document.getElementById('customCode').value;
+            const resultDiv = document.getElementById('result');
+
+            resultDiv.innerHTML = "Generando...";
+
+            try {
+                const response = await fetch('/shorten', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: url, custom_code: custom })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    resultDiv.innerHTML = `<span style="color: red;">ERROR ${data.error}</span>`;
+                } else {
+                    const shortUrl = window.location.origin + '/' + data.short_code;
+                    resultDiv.innerHTML = `Listo! Tu enlace es:<br><br><a href="${shortUrl}" target="_blank">${shortUrl}</a>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span style="color: red;">Error al conectar con el servidor</span>`;
+            }
+        });
+    </script>
+</body>
+</html>
