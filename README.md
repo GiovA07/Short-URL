@@ -1,11 +1,24 @@
 # URL Shortener API
 
-Una API REST rapida para acortar URLs, construida en Golang. 
+Una API RESTful de alto rendimiento y completa para el acortamiento de URLs, desarrollada en **Go** y persistida en **MySQL**. El proyecto sigue los principios de **Clean Architecture**, garantizando un código desacoplado, mantenible y listo para producción.
 
 ## Requisitos previos
 
-- [Go](https://go.dev/) 1.22 o superior
-- [MySQL](https://www.mysql.com/)
+![Go Version](https://img.shields.io/badge/Go-00ADD8?logo=Go&logoColor=white&style=for-the-badge)
+![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
+
+
+## Características Principales
+
+- **Clean Architecture (Repository Pattern):** Desacoplamiento total entre los *handlers* HTTP y la capa de almacenamiento (`URLRepository`).
+- **Enrutamiento Moderno:** Utiliza las características avanzadas de routing nativas de Go 1.22+ (`http.ServeMux`).
+- **Validaciones & Seguridad:** Validacion de URLs con `net/url` y protección contra colisiones en enlaces personalizados.
+- **Custom Short Codes:** Soporte para generar alias personalizados o códigos aleatorios.
+- **Métricas e Integración:** Rastreo de contador de accesos en tiempo real e interfaz web minimalista integrada (`HTML/CSS/JS`).
+- **Unit Testing:** Cobertura de pruebas automáticas con `httptest`.
+
+---
+
 
 ##  Instalacion y Uso
 
@@ -18,6 +31,19 @@ cd Short-URL
 2. **Configurar Base de Datos**
 
 Podes ejecutar el contenido del archivo sql/schema.sql en tu MySQL
+```sql
+CREATE DATABASE IF NOT EXISTS shortURL;
+USE shortURL;
+
+CREATE TABLE IF NOT EXISTS urls (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    short_code VARCHAR(20) UNIQUE NOT NULL,
+    original_url TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    update_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    access_count INT DEFAULT 0
+);
+```
 
 3. **Configurar variables de entorno**
 Crea un archivo .env en la raíz del proyecto utilizando en este ejemplo:
@@ -48,3 +74,8 @@ go run .
 | GET      | /shorten/{shortCode}/stats |evuelve las estadisticas de uso     |
 | GET      | /{shortCode}               |Redirecciona el ususario a la URL original     |
 
+## Tests
+Para ejecutar la suite de pruebas unitarias en memoria:
+```bash
+go test -v
+```
