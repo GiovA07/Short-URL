@@ -1,4 +1,5 @@
 # URL Shortener API
+Idea: https://roadmap.sh/projects/url-shortening-service
 
 Una API RESTful de alto rendimiento y completa para el acortamiento de URLs, desarrollada en **Go** y persistida en **MySQL**. El proyecto sigue los principios de **Clean Architecture**, garantizando un código desacoplado, mantenible y listo para producción.
 
