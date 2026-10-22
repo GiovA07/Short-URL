@@ -39,7 +39,7 @@
                 if (!response.ok) {
                     resultDiv.innerHTML = `<span style="color: red;">ERROR ${data.error}</span>`;
                 } else {
-                    const shortUrl = window.location.origin + '/' + data.short_code;
+                    const shortUrl = window.location.origin + '/' + data.shortCode;
                     resultDiv.innerHTML = `Listo! Tu enlace es:<br><br><a href="${shortUrl}" target="_blank">${shortUrl}</a>`;
                 }
             } catch (error) {

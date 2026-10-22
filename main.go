@@ -183,6 +183,8 @@ func main() {
 
 	mux := http.NewServeMux()
 	// 2. Registro las rutas
+	mux.Handle("/", http.FileServer(http.Dir("./static")))
+
 	mux.HandleFunc("POST /shorten", handleCreateShortURL)
 	mux.HandleFunc("GET /shorten/{shortCode}", handleGetURL)
 	mux.HandleFunc("PUT /shorten/{shortCode}", handleUpdateURL)
