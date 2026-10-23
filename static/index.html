@@ -106,8 +106,8 @@
         }
 
         async function guardarEdicion() {
-            const newURL = document.getElementById("editUrlInput");
-            if (!newURL) return alert("Ingresa una nueva URL");
+            const newURL = document.getElementById("editUrlInput").value;
+            if (newURL == "") return alert("Ingresa una nueva URL");
 
             try {
                 const response = await fetch(`/r/shorten/${currentShortCode}`, {
@@ -128,6 +128,27 @@
 
             } catch (error) {
                 alert("Error de conexion");
+            }
+        }
+
+        async function eliminarURL() {
+            if (!confirm("Estas seguro de borrar esta URL corta?")) return;
+            try {
+                const response = await fetch(`/r/shorten/${currentShortCode}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok || response.status === 204) {
+                    alert("URL eliminada con Exito!");
+                    document.getElementById('result').innerHTML = "";
+                    document.getElementById('actionButtons').style.display = 'none';
+                    document.getElementById('statsBox').style.display = 'none';
+                    document.getElementById('editBox').style.display = 'none';
+                } else {
+                    alert("No se pudo eliminar hubo un error");
+                }
+            } catch (error) {
+                alert("Error en la conexion");
             }
         }
 
