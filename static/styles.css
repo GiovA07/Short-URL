@@ -45,3 +45,23 @@ a {
     font-weight: bold; 
     font-size: 18px; }
 a:hover { text-decoration: underline; }
+
+
+.action-btn { 
+    margin: 5px; 
+    padding: 5px 10px; 
+    cursor: pointer; 
+}
+.box { 
+    display: none; 
+    background: #f9f9f9; 
+    border: 1px solid #ddd; 
+    padding: 15px; 
+    margin-top: 15px; 
+    border-radius: 5px; 
+}
+.danger { 
+    background-color: #ff4c4c; 
+    color: white; 
+    border: none; 
+}

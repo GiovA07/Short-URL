@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acortador de URL</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
     <div class="container">
@@ -15,9 +15,34 @@
             <button type="submit">Acortar URL</button>
         </form>
         <div id="result"></div>
+
+        <!-- Contenedor de Botones (Oculto inicialmente) -->
+        <div id="actionButtons" style="display: none; margin-top: 15px;">
+            <button class="action-btn" onclick="verEstadisticas()">Estadísticas</button>
+            <button class="action-btn" onclick="mostrarEditar()">Editar Destino</button>
+            <button class="action-btn danger" onclick="eliminarURL()">Eliminar</button>
+        </div>
+
+        <!-- Caja de Estadisticas -->
+        <div id="statsBox" class="box">
+            <h4>Estadísticas del Enlace</h4>
+            <p><strong>Destino original:</strong> <span id="statOriginal"></span></p>
+            <p><strong>Creado el:</strong> <span id="statDate"></span></p>
+            <p><strong>Cantidad de Veces Accedido:</strong> <span id="accessCount"></span></p>
+        </div>
+
+        <!-- Caja para Editar -->
+        <div id="editBox" class="box">
+            <h4>Editar URL de Destino</h4>
+            <input type="url" id="editUrlInput" placeholder="Nueva URL de destino" required style="width: 80%;">
+            <button class="action-btn" onclick="guardarEdicion()">Guardar</button>
+        </div>
+        
     </div>
 
     <script>
+        let currentShortCode = "";
+
         document.getElementById('shortenForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -25,10 +50,15 @@
             const custom = document.getElementById('customCode').value;
             const resultDiv = document.getElementById('result');
 
+            // Ocultamos las cajas por si habia algo de una consulta anterior
+            document.getElementById('actionButtons').style.display = 'none';
+            document.getElementById('statsBox').style.display = 'none';
+            document.getElementById('editBox').style.display = 'none';
             resultDiv.innerHTML = "Generando...";
 
+
             try {
-                const response = await fetch('/shorten', {
+                const response = await fetch('/r/shorten', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ url: url, custom_code: custom })
@@ -39,13 +69,68 @@
                 if (!response.ok) {
                     resultDiv.innerHTML = `<span style="color: red;">ERROR ${data.error}</span>`;
                 } else {
-                    const shortUrl = window.location.origin + '/' + data.shortCode;
+                    currentShortCode =  data.shortCode || custom;
+                    const shortUrl = window.location.origin + '/r/' + currentShortCode;
                     resultDiv.innerHTML = `Listo! Tu enlace es:<br><br><a href="${shortUrl}" target="_blank">${shortUrl}</a>`;
+                    document.getElementById('actionButtons').style.display = 'block';
                 }
             } catch (error) {
                 resultDiv.innerHTML = `<span style="color: red;">Error al conectar con el servidor</span>`;
             }
         });
+
+        // Ver Estadisticas (GET)
+        async function verEstadisticas() {
+            try {
+                const response = await fetch(`/r/shorten/${currentShortCode}/stats`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('statsBox').style.display = 'block';
+                    document.getElementById('statOriginal').innerText = data.url;
+                    const date = new Date(data.createAt);
+                    document.getElementById('statDate').innerText = date.toLocaleString();
+                    document.getElementById('accessCount').innerText = data.accessCount;
+
+                } else {
+                    alert("Error: " + data.error);
+                }
+            } catch (error) {
+                alert("Error de conexion");
+            }
+        }
+
+        function mostrarEditar() {
+            document.getElementById('statsBox').style.display = 'none';
+            document.getElementById('editBox').style.display = 'block';
+        }
+
+        async function guardarEdicion() {
+            const newURL = document.getElementById("editUrlInput");
+            if (!newURL) return alert("Ingresa una nueva URL");
+
+            try {
+                const response = await fetch(`/r/shorten/${currentShortCode}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: nuevaUrl })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert("URL ACTUALIZADA");
+                    document.getElementById('editBox').style.display = 'none'
+                    document.getElementById('editUrlInput').value = "";
+                } else {
+                    alert("Error: " + data.error);
+                }
+
+            } catch (error) {
+                alert("Error de conexion");
+            }
+        }
+
     </script>
 </body>
 </html>

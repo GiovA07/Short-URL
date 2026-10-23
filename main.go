@@ -183,17 +183,24 @@ func main() {
 
 	mux := http.NewServeMux()
 	// 2. Registro las rutas
-	mux.Handle("/", http.FileServer(http.Dir("./static")))
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 
-	mux.HandleFunc("POST /shorten", handleCreateShortURL)
-	mux.HandleFunc("GET /shorten/{shortCode}", handleGetURL)
-	mux.HandleFunc("PUT /shorten/{shortCode}", handleUpdateURL)
-	mux.HandleFunc("DELETE /shorten/{shortCode}", handleDeleteURL)
-	mux.HandleFunc("GET /shorten/{shortCode}/stats", handleGetStats)
-	mux.HandleFunc("GET /{shortCode}", handleRedirect)
+	// 2. Sirve el HTML principal exactamente en la raiz
+	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./static/index.html")
+	})
+
+	//3. Mis rutas
+	mux.HandleFunc("POST /r/shorten", handleCreateShortURL)
+	mux.HandleFunc("GET /r/shorten/{shortCode}", handleGetURL)
+	mux.HandleFunc("PUT /r/shorten/{shortCode}", handleUpdateURL)
+	mux.HandleFunc("DELETE /r/shorten/{shortCode}", handleDeleteURL)
+	mux.HandleFunc("GET /r/shorten/{shortCode}/stats", handleGetStats)
+	mux.HandleFunc("GET /r/{shortCode}", handleRedirect)
 
 	log.Println("Servidor corriendo en el puerto 8080")
-	// 3. Prendo el server
+
+	// 4. Prendo el server
 	err = http.ListenAndServe(":8080", mux)
 	if err != nil {
 		log.Fatalf("Error en el servidor: %v", err)
